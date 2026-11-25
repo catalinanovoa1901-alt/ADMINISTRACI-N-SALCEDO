@@ -49,8 +49,16 @@ fila_inicio = (
     - 1
 )
 
+filas_datos = datos[fila_inicio + 1 :]
+ancho_columnas = max(
+    len(datos[fila_inicio]),
+    max((len(fila) for fila in filas_datos), default=0),
+)
+fila_encabezados = datos[fila_inicio] + (None,) * (
+    ancho_columnas - len(datos[fila_inicio])
+)
 encabezados = []
-for indice, valor in enumerate(datos[fila_inicio], start=1):
+for indice, valor in enumerate(fila_encabezados, start=1):
     nombre = str(valor).strip() if valor is not None else ""
     encabezados.append(nombre or f"Columna {get_column_letter(indice)}")
 
@@ -60,7 +68,11 @@ for indice, nombre in enumerate(encabezados):
     if vistos[nombre] > 1:
         encabezados[indice] = f"{nombre} ({vistos[nombre]})"
 
-df = pd.DataFrame(datos[fila_inicio + 1 :], columns=encabezados).dropna(how="all")
+filas_ajustadas = [
+    fila + (None,) * (ancho_columnas - len(fila))
+    for fila in filas_datos
+]
+df = pd.DataFrame(filas_ajustadas, columns=encabezados).dropna(how="all")
 columnas = list(df.columns)
 
 if not columnas or df.empty:
